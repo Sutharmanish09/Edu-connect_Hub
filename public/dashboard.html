@@ -197,6 +197,14 @@
           <div><i class="fas fa-share"></i> Share</div>
         </div>
       </div>
+      <button id="logoutButton">Log Out</button>
+<script>
+    document.getElementById('logoutButton').addEventListener('click', () => {
+        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        window.location.href = '/login';
+    });
+</script>
+
       <!-- Repeat .post for more posts -->
     </div>
     <div class="right-sidebar">

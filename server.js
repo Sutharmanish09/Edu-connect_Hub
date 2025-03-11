@@ -9,6 +9,64 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
 const LinkedInStrategy = require('passport-linkedin-oauth2').Strategy;
 
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+
+// Password reset request
+app.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+    const user = await users.findOne({ username: email });
+
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    const token = crypto.randomBytes(20).toString('hex');
+    const resetLink = `http://localhost:3000/reset-password?token=${token}`;
+
+    // Save token to database with expiration
+    await users.updateOne({ _id: user._id }, { $set: { resetToken: token, resetTokenExpiration: Date.now() + 3600000 } });
+
+    // Send email with reset link
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'your-email@gmail.com',
+            pass: 'your-email-password'
+        }
+    });
+
+    const mailOptions = {
+        from: 'your-email@gmail.com',
+        to: email,
+        subject: 'Password Reset',
+        text: `Click the following link to reset your password: ${resetLink}`
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            return res.status(500).json({ message: 'Error sending email' });
+        }
+        res.json({ message: 'Password reset link sent' });
+    });
+});
+
+// Password reset
+app.post('/reset-password', async (req, res) => {
+    const { token, newPassword } = req.body;
+    const user = await users.findOne({ resetToken: token, resetTokenExpiration: { $gt: Date.now() } });
+
+    if (!user) {
+        return res.status(400).json({ message: 'Invalid or expired token' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await users.updateOne({ _id: user._id }, { $set: { password: hashedPassword }, $unset: { resetToken: "", resetTokenExpiration: "" } });
+
+    res.json({ message: 'Password reset successful' });
+});
+
+
 const app = express();
 const port = 3000;
 
