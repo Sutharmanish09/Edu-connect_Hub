@@ -1,3 +1,8 @@
+const express = require("express");
+const router = express.Router();
+const Conversation = require("../models/Conversation");
+
+// Your route handlers
 router.post("/", async (req, res) => {
   const { senderId, receiverId } = req.body;
 
@@ -12,3 +17,5 @@ router.post("/", async (req, res) => {
 
   res.json(conversation);
 });
+
+module.exports = router;

@@ -7,7 +7,7 @@ const cors = require("cors");
 const session = require("express-session");
 const jwt = require("jsonwebtoken");
 const path = require('path');
-
+const conversationRoutes = require("./routes/conversationRoutes");
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
@@ -128,6 +128,8 @@ app.get('/rooms', isAuthenticated, async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+// NEW: Serve conversation routes
+app.use("/api/conversations", conversationRoutes);
 
 // DATABASE CHECK ROUTES
 // Check database connection
@@ -470,4 +472,9 @@ server.listen(3000, () => {
     console.log(" Debug messages: http://localhost:3000/debug/messages");
     console.log(" Debug messages by room: http://localhost:3000/debug/messages?room=general");
     console.log(" Available rooms: http://localhost:3000/rooms");
+});
+
+// Serve React frontend (fallback for client-side routing)
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../client/public", "login.html"));
 });
