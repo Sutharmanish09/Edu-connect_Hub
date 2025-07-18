@@ -22,6 +22,7 @@
     --highlight-color: #666666;
     --error-color: #ff4d4d;
     --success-color: #4CAF50;
+    --warning-color: #ff9800;
     --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     --shadow-small: 0 2px 10px rgba(0, 0, 0, 0.2);
     --shadow-medium: 0 4px 20px rgba(0, 0, 0, 0.3);
@@ -53,6 +54,7 @@ body {
     position: relative;
     z-index: 2;
     box-shadow: var(--shadow-medium);
+    overflow-y: auto;
 }
 
 .form-container {
@@ -126,7 +128,12 @@ body {
     background: var(--accent-color);
     border-radius: 2px;
 }
-
+ .subheading {
+    font-size: 16px;
+    color: var(--accent-color);
+    margin-bottom: 20px;
+    font-weight: 400;
+}
 .social-btn {
     display: flex;
     align-items: center;
@@ -203,6 +210,34 @@ body {
     color: var(--text-color);
 }
 
+/* Email validation icon */
+.email-validation-icon {
+    position: absolute;
+    right: 15px;
+    top: 16px;
+    font-size: 16px;
+    z-index: 2;
+    transition: var(--transition);
+}
+
+.email-checking {
+    color: var(--warning-color);
+    animation: spin 1s linear infinite;
+}
+
+.email-valid {
+    color: var(--success-color);
+}
+
+.email-invalid {
+    color: var(--error-color);
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 /* Password toggle button styles */
 .password-container {
     position: relative;
@@ -245,6 +280,11 @@ input {
 
 .password-container input {
     padding-right: 45px; /* Make room for the toggle button */
+}
+
+/* Email input with validation icon */
+#register-email {
+    padding-right: 45px;
 }
 
 input:focus {
@@ -415,8 +455,16 @@ a:hover {
     display: none;
 }
 
+.success-message {
+    color: var(--success-color);
+    font-size: 13px;
+    margin-top: 8px;
+    margin-left: 15px;
+    display: none;
+}
+
 /* Grid pattern for illustration section */
-.grid-pattern {
+/* .grid-pattern {
     position: absolute;
     top: 0;
     left: 0;
@@ -427,7 +475,7 @@ a:hover {
         linear-gradient(90deg, rgba(30, 30, 30, 0.3) 1px, transparent 1px);
     background-size: 20px 20px;
     z-index: 0;
-}
+} */
 
 /* Animated elements */
 .animated-circle {
@@ -476,6 +524,15 @@ a:hover {
     }
 }
 
+/* Username hint styles */
+.username-hint {
+    font-size: 12px;
+    color: var(--accent-color);
+    margin-top: 5px;
+    margin-left: 15px;
+    opacity: 0.8;
+}
+
 /* Responsive styles */
 @media (max-width: 992px) {
     .container {
@@ -489,6 +546,8 @@ a:hover {
     
     .form-section {
         padding: 30px 20px;
+        height: 60vh;
+        overflow-y: auto;
     }
     
     .illustration-section {
@@ -496,7 +555,7 @@ a:hover {
     }
     
     .illustration-section img {
-        max-height: 30vh;
+        max-height: 40vh;
     }
 }
 </style>
@@ -513,13 +572,14 @@ a:hover {
             
             <div class="login-form">
                 <h2 class="heading">Welcome Back</h2>
+                <h4 class="subheading">Connect with thousands of educators and learners</h4>
                 <button class="social-btn btn-google"><i class="fab fa-google"></i> Sign in with Google</button>
-                <div class="divider">or continue with email</div>
+                <div class="divider">or continue with email/username</div>
                 
                 <div class="form-group">
-                    <input type="email" id="login-email" placeholder="Email" required>
-                    <i class="fas fa-envelope field-icon"></i>
-                    <div class="error-message" id="login-email-error"></div>
+                    <input type="text" id="login-identifier" placeholder="Email or Username" required>
+                    <i class="fas fa-user field-icon"></i>
+                    <div class="error-message" id="login-identifier-error"></div>
                 </div>
                 
                 <div class="form-group">
@@ -534,14 +594,7 @@ a:hover {
                 </div>
                 
                 <div class="forgot-password">
-                    <a href="forgot-password.html" onclick="goToForgotPassword()">Forgot Password?</a>
-
-<script>
-  function goToForgotPassword() {
-    const email = document.getElementById('email')?.value || '';
-    window.location.href = `/forgot-password.html?email=${encodeURIComponent(email)}`;
-  }
-</script>
+                    <a href="forgot-password.html" onclick="goToForgotPassword()">Forgot Password</a>
                 </div>
                 
                 <button class="btn" id="login-btn">Sign In</button>
@@ -564,9 +617,18 @@ a:hover {
                 </div>
                 
                 <div class="form-group">
+                    <input type="text" id="register-username" placeholder="Username" required>
+                    <i class="fas fa-at field-icon"></i>
+                    <div class="username-hint">Choose a unique username (3-20 characters, letters, numbers, underscore only)</div>
+                    <div class="error-message" id="register-username-error"></div>
+                </div>
+                
+                <div class="form-group">
                     <input type="email" id="register-email" placeholder="Email" required>
                     <i class="fas fa-envelope field-icon"></i>
+                    <i class="fas fa-spinner email-validation-icon" id="email-validation-icon" style="display: none;"></i>
                     <div class="error-message" id="register-email-error"></div>
+                    <div class="success-message" id="register-email-success"></div>
                 </div>
                 
                 <div class="form-group">
@@ -602,12 +664,12 @@ a:hover {
     </div>
     
     <div class="illustration-section">
-        <div class="grid-pattern"></div>
         <div class="illustration-background"></div>
         <div class="animated-circle circle-1"></div>
         <div class="animated-circle circle-2"></div>
         <div class="animated-circle circle-3"></div>
-        <img src="/src/ind_1.png" alt="Education Illustration">
+        <img src="Developer_activity-pana.png" height="30vh" width="auto" alt="Education Illustration">
+        <!-- <a href="https://storyset.com/work">Work illustrations by Storyset</a> -->
     </div>
 </div>
 
@@ -631,7 +693,7 @@ function showLoginForm() {
     formContainer.classList.remove('show-register');
     loginBtn.classList.add('active');
     registerBtn.classList.remove('active');
-    slider.classList.remove('right');
+    slider.classList.remove('right'); 
 }
 
 registerBtn.addEventListener('click', showRegisterForm);
@@ -646,14 +708,19 @@ toLoginLink.addEventListener('click', function(e) {
 });
 
 function goToForgotPassword() {
-    const email = document.getElementById('email').value;
-    if (!email) {
-      alert('Please enter your email first.');
-      return;
+    const identifier = document.getElementById('login-identifier').value;
+    if (!identifier) {
+        alert('Please enter your email or username first.');
+        return;
     }
-    // Redirect to forgot-password.html with email as query param
-    window.location.href = `/forgot-password.html?email=${encodeURIComponent(email)}`;
-  }
+    // Check if it's an email
+    const isEmail = /^\S+@\S+\.\S+$/.test(identifier);
+    if (isEmail) {
+        window.location.href = `/forgot-password.html?email=${encodeURIComponent(identifier)}`;
+    } else {
+        window.location.href = `/forgot-password.html?username=${encodeURIComponent(identifier)}`;
+    }
+}
 
 // Password toggle functions
 function toggleLoginPassword() {
@@ -700,6 +767,211 @@ function toggleConfirmPassword() {
         toggleBtn.classList.add('fa-eye');
     }
 }
+
+// Email validation functions
+let emailValidationTimeout;
+let isEmailValid = false;
+
+function validateEmailFormat(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function extractDomainFromEmail(email) {
+    return email.split('@')[1];
+}
+
+// Simulated email verification (replace with your preferred method)
+async function verifyEmailExists(email) {
+    // Method 1: Basic domain check (free)
+    try {
+        const domain = extractDomainFromEmail(email);
+        
+        // Check if domain has valid format
+        if (!domain || domain.includes(' ') || !domain.includes('.')) {
+            return { valid: false, reason: 'Invalid domain format' };
+        }
+        
+        // For demonstration, we'll simulate domain checking
+        // In real implementation, you'd use DNS lookup or API
+        const commonDomains = [
+            'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 
+            'aol.com', 'icloud.com', 'protonmail.com', 'zoho.com',
+            'mail.com', 'yandex.com', 'tutanota.com'
+        ];
+        
+        const isCommonDomain = commonDomains.some(d => domain.toLowerCase().includes(d.toLowerCase()));
+        
+        if (isCommonDomain) {
+            return { valid: true, reason: 'Email appears valid' };
+        }
+        
+        // For other domains, simulate API call
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                // Simulate API response (90% success rate for demo)
+                const isValid = Math.random() > 0.1;
+                resolve({
+                    valid: isValid,
+                    reason: isValid ? 'Email domain verified' : 'Domain does not exist or accept emails'
+                });
+            }, 1000);
+        });
+        
+    } catch (error) {
+        return { valid: false, reason: 'Could not verify email' };
+    }
+}
+
+/*
+async function verifyEmailWithAPI(email) {
+    try {
+        // Replace with your preferred email validation service
+        // Example with AbstractAPI (100 free validations/month)
+        const API_KEY = 'YOUR_FREE_API_KEY'; // Get from abstractapi.com
+        const response = await fetch(`https://emailvalidation.abstractapi.com/v1/?api_key=${API_KEY}&email=${email}`);
+        const data = await response.json();
+        
+        return {
+            valid: data.deliverability === "DELIVERABLE",
+            reason: data.deliverability === "DELIVERABLE" ? 'Email verified' : 'Email does not exist'
+        };
+    } catch (error) {
+        console.error('Email API verification failed:', error);
+        return { valid: false, reason: 'Could not verify email' };
+    }
+}
+*/
+
+function showEmailValidationIcon(type) {
+    const icon = document.getElementById('email-validation-icon');
+    icon.style.display = 'block';
+    icon.className = 'email-validation-icon';
+    
+    switch(type) {
+        case 'checking':
+            icon.classList.add('email-checking');
+            icon.classList.remove('fa-check', 'fa-times');
+            icon.classList.add('fa-spinner');
+            break;
+        case 'valid':
+            icon.classList.add('email-valid');
+            icon.classList.remove('fa-spinner', 'fa-times');
+            icon.classList.add('fa-check');
+            break;
+        case 'invalid':
+            icon.classList.add('email-invalid');
+            icon.classList.remove('fa-spinner', 'fa-check');
+            icon.classList.add('fa-times');
+            break;
+    }
+}
+
+function hideEmailValidationIcon() {
+    document.getElementById('email-validation-icon').style.display = 'none';
+}
+
+function showSuccess(elementId, message) {
+    const successElement = document.getElementById(elementId);
+    successElement.textContent = message;
+    successElement.style.display = 'block';
+}
+
+function clearSuccess(elementId) {
+    const successElement = document.getElementById(elementId);
+    successElement.textContent = '';
+    successElement.style.display = 'none';
+}
+
+// Real-time email validation
+document.getElementById('register-email').addEventListener('input', function() {
+    const email = this.value.trim();
+    const errorElement = document.getElementById('register-email-error');
+    const successElement = document.getElementById('register-email-success');
+    
+    // Clear previous states
+    errorElement.style.display = 'none';
+    successElement.style.display = 'none';
+    isEmailValid = false;
+    
+    // Clear existing timeout
+    if (emailValidationTimeout) {
+        clearTimeout(emailValidationTimeout);
+    }
+    
+    if (!email) {
+        hideEmailValidationIcon();
+        return;
+    }
+    
+    // First check format
+    if (!validateEmailFormat(email)) {
+        showEmailValidationIcon('invalid');
+        showError('register-email-error', 'Please enter a valid email format');
+        return;
+    }
+    
+    // Show checking state
+    showEmailValidationIcon('checking');
+    
+    // Debounce the API call
+    emailValidationTimeout = setTimeout(async () => {
+        try {
+            const result = await verifyEmailExists(email);
+            
+            if (result.valid) {
+                showEmailValidationIcon('valid');
+                showSuccess('register-email-success', result.reason);
+                isEmailValid = true;
+            } else {
+                showEmailValidationIcon('invalid');
+                showError('register-email-error', result.reason);
+                isEmailValid = false;
+            }
+        } catch (error) {
+            showEmailValidationIcon('invalid');
+            showError('register-email-error', 'Could not verify email');
+            isEmailValid = false;
+        }
+    }, 1000); // Wait 1 second after user stops typing
+});
+
+// Username validation function
+function validateUsername(username) {
+    // Check length (3-20 characters)
+    if (username.length < 3 || username.length > 20) {
+        return 'Username must be between 3 and 20 characters';
+    }
+    
+    // Check for valid characters (letters, numbers, underscore only)
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        return 'Username can only contain letters, numbers, and underscores';
+    }
+    
+    // Check if it starts with a letter or underscore
+    if (!/^[a-zA-Z_]/.test(username)) {
+        return 'Username must start with a letter or underscore';
+    }
+    
+    return null; // Valid
+}
+
+// Real-time username validation
+document.getElementById('register-username').addEventListener('input', function() {
+    const username = this.value.trim();
+    const errorElement = document.getElementById('register-username-error');
+    
+    if (username) {
+        const error = validateUsername(username);
+        if (error) {
+            showError('register-username-error', error);
+        } else {
+            errorElement.style.display = 'none';
+        }
+    } else {
+        errorElement.style.display = 'none';
+    }
+});
 
 // Show error message
 function showError(elementId, message) {
@@ -757,6 +1029,7 @@ document.getElementById('register-btn').addEventListener('click', async function
     clearErrors();
     
     const name = document.getElementById('register-name').value.trim();
+    const username = document.getElementById('register-username').value.trim();
     const email = document.getElementById('register-email').value.trim();
     const password = document.getElementById('register-password').value;
     const confirmPassword = document.getElementById('register-confirm-password').value;
@@ -767,6 +1040,17 @@ document.getElementById('register-btn').addEventListener('click', async function
     if (!name) {
         showError('register-name-error', 'Name is required');
         isValid = false;
+    }
+    
+    if (!username) {
+        showError('register-username-error', 'Username is required');
+        isValid = false;
+    } else {
+        const usernameError = validateUsername(username);
+        if (usernameError) {
+            showError('register-username-error', usernameError);
+            isValid = false;
+        }
     }
     
     if (!email) {
@@ -801,7 +1085,8 @@ document.getElementById('register-btn').addEventListener('click', async function
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                username: name,
+                username: username,
+                name: name,
                 email: email,
                 password: password
             })
@@ -820,7 +1105,14 @@ document.getElementById('register-btn').addEventListener('click', async function
             }, 1000);
         } else {
             resetButton('register-btn', 'Create Account');
-            showError('register-error', data.message || data.error || 'Registration failed');
+            // Handle specific error cases
+            if (data.message && data.message.includes('username')) {
+                showError('register-username-error', data.message);
+            } else if (data.message && data.message.includes('email')) {
+                showError('register-email-error', data.message);
+            } else {
+                showError('register-error', data.message || data.error || 'Registration failed');
+            }
         }
     } catch (error) {
         resetButton('register-btn', 'Create Account');
@@ -833,17 +1125,14 @@ document.getElementById('register-btn').addEventListener('click', async function
 document.getElementById('login-btn').addEventListener('click', async function () {
     clearErrors();
     
-    const email = document.getElementById('login-email').value.trim();
+    const identifier = document.getElementById('login-identifier').value.trim();
     const password = document.getElementById('login-password').value;
 
     // Validate inputs
     let isValid = true;
     
-    if (!email) {
-        showError('login-email-error', 'Email is required');
-        isValid = false;
-    } else if (!/^\S+@\S+\.\S+$/.test(email)) {
-        showError('login-email-error', 'Please enter a valid email');
+    if (!identifier) {
+        showError('login-identifier-error', 'Email or username is required');
         isValid = false;
     }
     
@@ -857,13 +1146,16 @@ document.getElementById('login-btn').addEventListener('click', async function ()
     showLoading('login-btn', 'Sign In');
 
     try {
+        // Determine if identifier is email or username
+        const isEmail = /^\S+@\S+\.\S+$/.test(identifier);
+        
         const response = await fetch('/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                email: email,
+                [isEmail ? 'email' : 'username']: identifier,
                 password: password
             })
         });
