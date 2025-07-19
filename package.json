@@ -90,7 +90,7 @@
     "passport-linkedin-oauth2": "^2.0.0",
     "passport-oauth2": "^1.8.0",
     "passport-strategy": "^1.0.0",
-    "path-to-regexp": "^8.2.0",
+    "path-to-regexp": "^6.2.1",
     "pause": "^0.0.1",
     "proxy-addr": "^2.0.7",
     "punycode": "^2.3.1",

@@ -10,7 +10,7 @@ const path = require('path');
 const conversationRoutes = require("./routes/conversationRoutes");
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+const io = new Server(server, { cors: { origin: "/*" } });
 
 // Middleware setup (order matters!)
 app.use(express.json());
@@ -31,10 +31,7 @@ app.use(express.static(path.join(__dirname, "../client/public")));
 // MongoDB connection with better error handling
 const connectDB = async () => {
     try {
-        const conn = await mongoose.connect("mongodb://127.0.0.1:27017/chatApp", {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
+        const conn = await mongoose.connect("mongodb://127.0.0.1:27017/chatApp");
         
         console.log(' Connected to MongoDB:', conn.connection.host);
         console.log(' Database name:', conn.connection.name);
@@ -475,6 +472,9 @@ server.listen(3000, () => {
 });
 
 // Serve React frontend (fallback for client-side routing)
-app.get("*", (req, res) => {
+// app.get("/*", (req, res) => {
+//     res.sendFile(path.join(__dirname, "../client/public", "login.html"));
+// });
+app.get(/^\/(?!api).*/, (req, res) => {
     res.sendFile(path.join(__dirname, "../client/public", "login.html"));
 });
